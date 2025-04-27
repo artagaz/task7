@@ -183,6 +183,7 @@ def get_southernmost_city(cities):
 #     coords = get_point_coordinates(address)
 #     if coords:
 #         pt_params.append(f"{coords},pm2rdm")
+#     print(pt_params)
 #
 # params = {
 #     # "ll": "86.102792,55.358422",
@@ -223,31 +224,30 @@ def get_southernmost_city(cities):
 print("\nДлина пути:")
 points = [
     "86.102792,55.358422",  # Кемерово
-    "54.947922,86.379285",  # Панфилово
-    "54.663875,86.161708",  # ЛК
-    "53.885196,86.749251"  # Прокопьевск
+    "86.379429,54.947760",  # Панфилово
+    "86.161708,54.663875",  # ЛК
+    "86.749251,53.885196"  # Прокопьевск
 ]
 
-# Вычисляем длину маршрута
-# distance = 0.0
-# for i in range(len(points) - 1):
-#     point1 = points[i]
-#     point2 = points[i + 1]
-#     distance += geodesic(point1, point2).kilometers
-#
-# print(f"Общая длина маршрута: {distance:.2f} км")
+#Вычисляем длину маршрута
+distance = 0.0
+for i in range(len(points) - 1):
+    point1 = points[i]
+    point2 = points[i + 1]
+    distance += geodesic(point1, point2).kilometers
 
-# Определяем среднюю точку
-#midpoint_index = len(points) // 2
+print(f"Общая длина маршрута: {distance:.2f} км")
 
-# Сохраняем карту с маршрутом и меткой
-# params = {
-#     # "ll": "86.569349,54.136101",
-#     # "z": "7",
-#     "l": "map",
-#     "pl": ",".join(points),
-#     #"pt": "~54.663875,86.161708,pm2rdm",
-#     "size": "650,450"
-# }
-# print(params.get("pt"))
-# save_map_image("route.jpg", params)
+midpoint_index = len(points) // 2
+pt_params = []
+pt_params.append(f"{points[midpoint_index]},pm2rdm")
+
+#Сохраняем карту с маршрутом и меткой
+params = {
+    "l": "map",
+    "pl": ",".join(points),
+    "pt": "~".join(pt_params),
+    "size": "650,450"
+}
+print(params.get("pt"))
+save_map_image("route.jpg", params)
