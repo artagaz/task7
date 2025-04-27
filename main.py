@@ -9,10 +9,12 @@
 
 # 2
 import requests
+from geopy.distance import geodesic
 
 API_KEY = "c1f9c6cc-3d3a-4be7-943c-7379bb211fc1"
 BASE_URL = "https://geocode-maps.yandex.ru/1.x/"
 STATIC_MAPS_URL = "https://static-maps.yandex.ru/1.x/"
+
 
 def geocode(address):
     params = {
@@ -23,11 +25,13 @@ def geocode(address):
     response = requests.get(BASE_URL, params=params)
     return response.json()
 
+
 def get_coordinates(city):
     data = geocode(city)
     pos = data['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['Point']['pos']
     longitude, latitude = pos.split()
     return float(latitude), float(longitude)
+
 
 def get_point_coordinates(address):
     data = geocode(address)
@@ -37,43 +41,53 @@ def get_point_coordinates(address):
     except:
         return None
 
+
 def get_federal_district(city):
     data = geocode(city)
     try:
-        district = data['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['metaDataProperty']['GeocoderMetaData']['AddressDetails']['Country']['AdministrativeArea']['AdministrativeAreaName']
+        district = data['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['metaDataProperty'][
+            'GeocoderMetaData']['AddressDetails']['Country']['AdministrativeArea']['AdministrativeAreaName']
         return district
     except:
         return "Не удалось определить"
 
+
 def get_postal_code(address):
     data = geocode(address)
     try:
-        postal_code = data['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['metaDataProperty']['GeocoderMetaData']['Address']['postal_code']
+        postal_code = data['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['metaDataProperty'][
+            'GeocoderMetaData']['Address']['postal_code']
         return postal_code
     except:
         return "Не удалось определить"
 
+
 def get_full_address(address):
     data = geocode(address)
     try:
-        full_address = data['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['metaDataProperty']['GeocoderMetaData']['Address']['formatted']
+        full_address = data['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['metaDataProperty'][
+            'GeocoderMetaData']['Address']['formatted']
         pos = data['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['Point']['pos']
         return full_address, pos
     except:
         return None, None
 
+
 def get_region(city):
     data = geocode(city)
     try:
-        region = data['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['metaDataProperty']['GeocoderMetaData']['AddressDetails']['Country']['AdministrativeArea']['AdministrativeAreaName']
+        region = data['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['metaDataProperty'][
+            'GeocoderMetaData']['AddressDetails']['Country']['AdministrativeArea']['AdministrativeAreaName']
         return region
     except:
         return "Не удалось определить"
+
 
 def save_map_image(filename, params):
     response = requests.get(STATIC_MAPS_URL, params=params)
     with open(filename, 'wb') as f:
         f.write(response.content)
+
 
 def get_southernmost_city(cities):
     min_lat = 90
@@ -90,9 +104,6 @@ def get_southernmost_city(cities):
             continue
     return southern_city
 
-def calculate_distance(points):
-    # Упрощенный расчет расстояния (для точного нужно использовать API маршрутизации)
-    return len(points) - 1  # Заглушка
 
 # # 2
 #
@@ -174,8 +185,8 @@ def calculate_distance(points):
 #         pt_params.append(f"{coords},pm2rdm")
 #
 # params = {
-#     "ll": "86.102792,55.358422",
-#     "z": "13",
+#     # "ll": "86.102792,55.358422",
+#     # "z": "13",
 #     "l": "map",
 #     "pt": "~".join(pt_params),
 #     "size": "650,450"
@@ -183,53 +194,60 @@ def calculate_distance(points):
 # save_map_image("kemerovo.jpg", params)
 # print("Карта сохранена в kemerovo.jpg")
 
-# # №8: Карта Кемеровской области с маршрутом
-# print("\n№8: Карта области с маршрутом")
-# route = ["Кемерово", "Ленинск-Кузнецкий", "Новокузнецк", "Шерегеш"]
+# 8
+# print("\nКарта области с маршрутом")
 # route_coords = []
-# for city in route:
-#     coords = get_coordinates(city)
+# for city in ["Кемерово", "Ленинск-Кузнецкий", "Новокузнецк", "Шерегеш"]:
+#     coords = get_point_coordinates(city)
+#     print(coords)
 #     if coords:
 #         route_coords.append(coords)
 #
 # params = {
+#     # "ll": "86.569349,54.136101",
+#     # "z": "7",
 #     "l": "map",
-#     "pl": "~".join(route_coords),
+#     "pl": ",".join(route_coords),
 #     "size": "650,450"
 # }
 # save_map_image("kemerovo_region.jpg", params)
 # print("Карта сохранена в kemerovo_region.jpg")
-#
-# # №9: Самый южный город
-# print("\n№9: Определение самого южного города")
+
+# # 9
 # input_cities = input("Введите города через запятую: ").split(',')
 # cities = [city.strip() for city in input_cities if city.strip()]
 # southern_city = get_southernmost_city(cities)
 # print(f"Самый южный город: {southern_city}")
+
+# 10
+print("\nДлина пути:")
+points = [
+    "86.102792,55.358422",  # Кемерово
+    "54.947922,86.379285",  # Панфилово
+    "54.663875,86.161708",  # ЛК
+    "53.885196,86.749251"  # Прокопьевск
+]
+
+# Вычисляем длину маршрута
+# distance = 0.0
+# for i in range(len(points) - 1):
+#     point1 = points[i]
+#     point2 = points[i + 1]
+#     distance += geodesic(point1, point2).kilometers
 #
-# # №10: Длина пути и карта с меткой
-# print("\n№10: Длина пути и карта")
-# points = [
-#     "55.7558,37.6176",  # Москва
-#     "59.9343,30.3351",  # СПб
-#     "56.3269,44.0065"   # Нижний Новгород
-# ]
-#
-# # Расчет средней точки
-# lats = [float(p.split(',')[0]) for p in points]
-# lons = [float(p.split(',')[1]) for p in points]
-# mid_lat = sum(lats) / len(lats)
-# mid_lon = sum(lons) / len(lons)
-# mid_point = f"{mid_lon},{mid_lat}"
-#
+# print(f"Общая длина маршрута: {distance:.2f} км")
+
+# Определяем среднюю точку
+#midpoint_index = len(points) // 2
+
+# Сохраняем карту с маршрутом и меткой
 # params = {
+#     # "ll": "86.569349,54.136101",
+#     # "z": "7",
 #     "l": "map",
-#     "pl": "~".join(points),
-#     "pt": f"{mid_point},pm2rdm",
+#     "pl": ",".join(points),
+#     #"pt": "~54.663875,86.161708,pm2rdm",
 #     "size": "650,450"
 # }
+# print(params.get("pt"))
 # save_map_image("route.jpg", params)
-#
-# distance = calculate_distance(points)
-# print(f"Длина пути (условно): {distance} точек")
-# print("Карта с маршрутом сохранена в route.jpg")
